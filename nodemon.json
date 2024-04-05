@@ -1,0 +1,8 @@
+{
+  "env": {
+    "MYSQL_HOST": "localhost",
+    "MYSQL_USER": "root",
+    "MYSQL_DEFAULT_DATABASE": "job-board",
+    "MYSQL_PASSWORD": "12345"
+  }
+}

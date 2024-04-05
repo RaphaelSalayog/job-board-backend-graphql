@@ -1,0 +1,17 @@
+type Query {
+  jobs: [Job] #[Jobs!] add ! to prevent array elements to be nullable
+}
+
+type Job {
+  id: ID!
+  company: Company
+  title: String!
+  description: String
+  createdAt: String!
+}
+
+type Company {
+  id: ID!
+  name: String!
+  description: String
+}
