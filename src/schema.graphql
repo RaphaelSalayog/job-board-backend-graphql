@@ -1,5 +1,7 @@
 type Query {
-  jobs: [Job] #[Jobs!] add ! to prevent array elements to be nullable
+  getAllJobs: [Job] #[Jobs!] add ! to prevent array elements to be nullable
+  getCompanyById(id: ID!): Company
+  getJobById(id: ID!): Job
 }
 
 type Job {
@@ -14,4 +16,5 @@ type Company {
   id: ID!
   name: String!
   description: String
+  jobs: [Job!]
 }
