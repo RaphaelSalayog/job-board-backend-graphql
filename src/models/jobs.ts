@@ -42,19 +42,27 @@ const updateJob = async (
     input: { id, title, description },
   }: { input: { id: number; title: string; description: string } }
 ) => {
-  const [qwe, asd] = await db.execute<RowDataPacket[]>(
-    `SELECT id FROM jobs WHERE id=${id}`
-  );
-  if (!qwe[0]) {
-    throw notFoundError("No Job found with id " + id, "NOT_FOUND");
-  }
-  const [data, fields] = await db.execute<ResultSetHeader>(
-    `UPDATE jobs SET title="${title}", description="${description}" WHERE id=${id}`
-  );
-  const [resultData, resultFields] = await db.execute<RowDataPacket[]>(
+  const [data, fields] = await db.execute<RowDataPacket[]>(
     `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
   );
-  return resultData[0];
+  if (!data[0]) {
+    throw notFoundError("No Job found with id " + id, "NOT_FOUND");
+  }
+  await db.execute<ResultSetHeader>(
+    `UPDATE jobs SET title="${title}", description="${description}" WHERE id=${id}`
+  );
+  return data[0];
+};
+
+const deleteJob = async (_root: any, { id }: { id: number }) => {
+  const [data, fields] = await db.execute<RowDataPacket[]>(
+    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
+  );
+  if (!data[0]) {
+    throw notFoundError("No Job found with id " + id, "NOT_FOUND");
+  }
+  await db.execute<RowDataPacket[]>(`DELETE FROM jobs WHERE id=${id}`);
+  return data[0];
 };
 
 // Field Resolvers
@@ -65,4 +73,4 @@ const company = async (job: IJob) => {
   return data[0];
 };
 
-export { getAllJobs, getJobById, createJob, updateJob, company };
+export { getAllJobs, getJobById, createJob, updateJob, company, deleteJob };

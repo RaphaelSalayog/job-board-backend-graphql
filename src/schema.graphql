@@ -1,17 +1,18 @@
 type Query {
   getAllJobs: [Job] #[Jobs!] add ! to prevent array elements to be nullable
-  getCompanyById(id: ID!): Company
-  getJobById(id: ID!): Job
+  getCompanyById(id: ID!): Company!
+  getJobById(id: ID!): Job!
 }
 
 type Mutation {
-  createJob(input: CreateJobInput!): Job
-  updateJob(input: UpdateJobInput!): Job
+  createJob(input: CreateJobInput!): Job!
+  updateJob(input: UpdateJobInput!): Job!
+  deleteJob(id: ID!): Job!
 }
 
 type Job {
   id: ID!
-  company: Company
+  company: Company!
   title: String!
   description: String
   createdAt: String!

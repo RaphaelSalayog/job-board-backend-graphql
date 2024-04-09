@@ -1,6 +1,7 @@
 import {
   company,
   createJob,
+  deleteJob,
   getAllJobs,
   getJobById,
   updateJob,
@@ -17,6 +18,7 @@ const resolvers = {
   Mutation: {
     createJob: createJob,
     updateJob: updateJob,
+    deleteJob: deleteJob,
   },
 
   Job: {
