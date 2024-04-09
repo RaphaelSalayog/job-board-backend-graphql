@@ -3,6 +3,7 @@ import db from "../../util/database";
 import { getCurrentDateTime } from "../../util/customMethods";
 import { notFoundError } from "../../util/error";
 import { IJob } from "../interface/model";
+import { ExpressContext } from "apollo-server-express";
 
 // Queries
 const getAllJobs = async () => {
@@ -24,8 +25,10 @@ const createJob = async (
   _root: any,
   {
     input: { title, description },
-  }: { input: { title: string; description: string } }
+  }: { input: { title: string; description: string } },
+  context: ExpressContext
 ) => {
+  console.log(context);
   const companyId = 2;
   const [data, fields] = await db.execute<ResultSetHeader>(
     `INSERT INTO jobs (companyId, title, description, createdAt) VALUES (${companyId}, "${title}", "${description}", "${getCurrentDateTime()}")`

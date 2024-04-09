@@ -11,3 +11,8 @@ export interface IJob {
   description: string;
   createdAt: string;
 }
+
+export interface CustomError extends Error {
+  statusCode?: number;
+  message: string;
+}
