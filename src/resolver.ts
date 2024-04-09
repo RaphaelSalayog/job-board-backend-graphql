@@ -57,6 +57,26 @@ const resolvers = {
       );
       return resultData[0];
     },
+    updateJob: async (
+      _root: any,
+      {
+        input: { id, title, description },
+      }: { input: { id: number; title: string; description: string } }
+    ) => {
+      const [qwe, asd] = await db.execute<RowDataPacket[]>(
+        `SELECT id FROM jobs WHERE id=${id}`
+      );
+      if (!qwe[0]) {
+        throw notFoundError("No Job found with id " + id, "NOT_FOUND");
+      }
+      const [data, fields] = await db.execute<ResultSetHeader>(
+        `UPDATE jobs SET title="${title}", description="${description}" WHERE id=${id}`
+      );
+      const [resultData, resultFields] = await db.execute<RowDataPacket[]>(
+        `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
+      );
+      return resultData[0];
+    },
   },
 
   Job: {
