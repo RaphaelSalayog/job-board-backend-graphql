@@ -7,6 +7,7 @@ import {
   updateJob,
 } from "./models/jobs";
 import { getCompanyById, jobs } from "./models/companies";
+import { login } from "./models/auth";
 
 const resolvers = {
   Query: {
@@ -16,6 +17,7 @@ const resolvers = {
   },
 
   Mutation: {
+    login: login,
     createJob: createJob,
     updateJob: updateJob,
     deleteJob: deleteJob,

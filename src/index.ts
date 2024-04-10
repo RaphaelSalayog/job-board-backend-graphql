@@ -1,20 +1,20 @@
-import express, { Express, Request, Response, NextFunction } from "express";
+import express, { Express } from "express";
 import { ApolloServer, gql } from "apollo-server-express";
 import fs from "fs";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import db from "../util/database";
 
 import resolvers from "./resolver";
 import cors from "cors";
-import { signup } from "./models/auth";
 import bodyParser from "body-parser";
-import { CustomError } from "./interface/model";
+import { RowDataPacket } from "mysql2";
 
 const app: Express = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors(), bodyParser.json(), express());
 
-app.post("/signup", signup);
-// app.post("/login", login);
+// app.post("/signup", signup);
 
 const typeDefs = gql(
   fs.readFileSync("./src/schema.graphql", { encoding: "utf8" })
@@ -22,23 +22,19 @@ const typeDefs = gql(
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }) => {
-    return { sample: "sample" };
+  context: async ({ req }) => {
+    const token = req.get("Authorization")?.split(" ")[1];
+    if (token) {
+      const decodedToken = jwt.verify(token, "secrettoken") as JwtPayload;
+      const [data, fields] = await db.execute<RowDataPacket[]>(
+        `SELECT id, companyId, email, password FROM users WHERE id="${decodedToken.userId}"`
+      );
+      return { user: data[0] };
+    }
+    return {};
   },
 });
 apolloServer.applyMiddleware({ app, path: "/graphql" });
-
-app.use(
-  (error: CustomError, req: Request, res: Response, next: NextFunction) => {
-    console.log(error);
-    const statusCode = error.statusCode || 500;
-    const message = error.message;
-    res.status(statusCode).json({
-      message: message,
-      statusCode: statusCode,
-    });
-  }
-);
 
 app.listen(PORT, () => {
   console.log(`Server connected in port ${PORT}`);

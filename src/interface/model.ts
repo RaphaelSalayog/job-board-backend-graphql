@@ -1,3 +1,10 @@
+export interface IUser {
+  id: number;
+  companyId: number;
+  email: string;
+  password: string;
+}
+
 export interface ICompany {
   id: number;
   name: string;

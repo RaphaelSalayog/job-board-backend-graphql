@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import db from "../../util/database";
-import { notFoundError } from "../../util/error";
+import { errorHandler } from "../../util/error";
 import { ICompany } from "../interface/model";
 
 // Queries
@@ -9,7 +9,7 @@ const getCompanyById = async (_root: any, { id }: { id: number }) => {
     `SELECT * FROM companies WHERE id=${id}`
   );
   if (!data[0]) {
-    throw notFoundError("No Company found with id " + id, "NOT_FOUND");
+    throw errorHandler("No Company found with id " + id, "NOT_FOUND");
   }
   return data[0];
 };

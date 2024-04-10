@@ -1,8 +1,8 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import db from "../../util/database";
 import { getCurrentDateTime } from "../../util/customMethods";
-import { notFoundError } from "../../util/error";
-import { IJob } from "../interface/model";
+import { errorHandler } from "../../util/error";
+import { IJob, IUser } from "../interface/model";
 import { ExpressContext } from "apollo-server-express";
 
 // Queries
@@ -43,16 +43,20 @@ const updateJob = async (
   _root: any,
   {
     input: { id, title, description },
-  }: { input: { id: number; title: string; description: string } }
+  }: { input: { id: number; title: string; description: string } },
+  { user }: { user: IUser }
 ) => {
+  if (!user) {
+    errorHandler("Missing authentication", "NOT_FOUND");
+  }
   const [data, fields] = await db.execute<RowDataPacket[]>(
-    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
+    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id} AND companyId=${user.companyId}`
   );
   if (!data[0]) {
-    throw notFoundError("No Job found with id " + id, "NOT_FOUND");
+    throw errorHandler("No Job found with id " + id, "NOT_FOUND");
   }
   await db.execute<ResultSetHeader>(
-    `UPDATE jobs SET title="${title}", description="${description}" WHERE id=${id}`
+    `UPDATE jobs SET title="${title}", description="${description}" WHERE id=${id} AND companyId=${user.companyId}`
   );
   return data[0];
 };
@@ -62,7 +66,7 @@ const deleteJob = async (_root: any, { id }: { id: number }) => {
     `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
   );
   if (!data[0]) {
-    throw notFoundError("No Job found with id " + id, "NOT_FOUND");
+    throw errorHandler("No Job found with id " + id, "NOT_FOUND");
   }
   await db.execute<RowDataPacket[]>(`DELETE FROM jobs WHERE id=${id}`);
   return data[0];

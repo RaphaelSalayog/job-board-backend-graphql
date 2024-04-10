@@ -1,6 +1,6 @@
 import { GraphQLError } from "graphql";
 
-const notFoundError = (text: string, errorCode: string) => {
+const errorHandler = (text: string, errorCode: string) => {
   return new GraphQLError(text, null, null, null, null, null, {
     extensions: {
       code: errorCode,
@@ -8,4 +8,4 @@ const notFoundError = (text: string, errorCode: string) => {
   });
 };
 
-export { notFoundError };
+export { errorHandler };
