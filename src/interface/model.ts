@@ -19,6 +19,19 @@ export interface IJob {
   createdAt: string;
 }
 
+export interface IAddJob {
+  companyId: number;
+  title: string;
+  description: string;
+}
+
+export interface IUpdateJob {
+  id: number;
+  title: string;
+  description: string;
+  companyId?: number;
+}
+
 export interface CustomError extends Error {
   statusCode?: number;
   message: string;

@@ -1,5 +1,5 @@
 import { RowDataPacket } from "mysql2";
-import db from "../../util/database";
+import db from "../../util/database/connection";
 import { errorHandler } from "../../util/error";
 import { ICompany } from "../interface/model";
 

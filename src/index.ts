@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import { ApolloServer, gql } from "apollo-server-express";
 import fs from "fs";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import db from "../util/database";
+import db from "../util/database/connection";
 
 import resolvers from "./resolver";
 import cors from "cors";

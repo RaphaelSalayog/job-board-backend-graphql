@@ -1,22 +1,23 @@
-import { ResultSetHeader, RowDataPacket } from "mysql2";
-import db from "../../util/database";
-import { getCurrentDateTime } from "../../util/customMethods";
 import { errorHandler } from "../../util/error";
-import { IJob, IUser } from "../interface/model";
+import { IJob, IUpdateJob, IUser } from "../interface/model";
 import { ExpressContext } from "apollo-server-express";
+import {
+  addJob_DbQuery,
+  deleteJob_DbQuery,
+  getAllJobs_DbQuery,
+  getJobById_DbQuery,
+  updateJob_DbQuery,
+} from "../../util/database/jobQueries";
+import { getCompanyById_DbQuery } from "../../util/database/companyQueries";
 
 // Queries
 const getAllJobs = async () => {
-  const [data, fields] = await db.execute<RowDataPacket[]>(
-    "SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs"
-  );
+  const [data, fields] = await getAllJobs_DbQuery();
   return data;
 };
 
 const getJobById = async (_root: any, { id }: { id: number }) => {
-  const [data, fields] = await db.execute<RowDataPacket[]>(
-    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
-  );
+  const [data, fields] = await getJobById_DbQuery(id);
   return data[0];
 };
 
@@ -28,55 +29,50 @@ const createJob = async (
   }: { input: { title: string; description: string } },
   context: ExpressContext
 ) => {
-  console.log(context);
   const companyId = 2;
-  const [data, fields] = await db.execute<ResultSetHeader>(
-    `INSERT INTO jobs (companyId, title, description, createdAt) VALUES (${companyId}, "${title}", "${description}", "${getCurrentDateTime()}")`
-  );
-  const [resultData, resultFields] = await db.execute<RowDataPacket[]>(
-    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${data.insertId}`
-  );
+  const [data, fields] = await addJob_DbQuery({
+    companyId,
+    title,
+    description,
+  });
+  const [resultData, resultFields] = await getJobById_DbQuery(data.insertId);
+
   return resultData[0];
 };
 
 const updateJob = async (
   _root: any,
-  {
-    input: { id, title, description },
-  }: { input: { id: number; title: string; description: string } },
+  { input: { id, title, description } }: { input: IUpdateJob },
   { user }: { user: IUser }
 ) => {
   if (!user) {
     errorHandler("Missing authentication", "NOT_FOUND");
   }
-  const [data, fields] = await db.execute<RowDataPacket[]>(
-    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id} AND companyId=${user.companyId}`
-  );
+  const [data, fields] = await getJobById_DbQuery(id, user.companyId);
   if (!data[0]) {
     throw errorHandler("No Job found with id " + id, "NOT_FOUND");
   }
-  await db.execute<ResultSetHeader>(
-    `UPDATE jobs SET title="${title}", description="${description}" WHERE id=${id} AND companyId=${user.companyId}`
-  );
+  await updateJob_DbQuery({
+    id,
+    title,
+    description,
+    companyId: user.companyId,
+  });
   return data[0];
 };
 
 const deleteJob = async (_root: any, { id }: { id: number }) => {
-  const [data, fields] = await db.execute<RowDataPacket[]>(
-    `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs WHERE id=${id}`
-  );
+  const [data, fields] = await getJobById_DbQuery(id);
   if (!data[0]) {
     throw errorHandler("No Job found with id " + id, "NOT_FOUND");
   }
-  await db.execute<RowDataPacket[]>(`DELETE FROM jobs WHERE id=${id}`);
+  await deleteJob_DbQuery(id);
   return data[0];
 };
 
 // Field Resolvers
 const company = async (job: IJob) => {
-  const [data, fields] = await db.execute<RowDataPacket[]>(
-    `SELECT * FROM companies WHERE id=${job.companyId}`
-  );
+  const [data, fields] = await getCompanyById_DbQuery(job.companyId);
   return data[0];
 };
 
