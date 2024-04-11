@@ -1,6 +1,5 @@
 import { errorHandler } from "../../util/error";
 import { IJob, IUpdateJob, IUser } from "../interface/model";
-import { ExpressContext } from "apollo-server-express";
 import {
   addJob_DbQuery,
   deleteJob_DbQuery,
@@ -27,11 +26,13 @@ const createJob = async (
   {
     input: { title, description },
   }: { input: { title: string; description: string } },
-  context: ExpressContext
+  { user }: { user: IUser }
 ) => {
-  const companyId = 2;
+  if (!user) {
+    throw errorHandler("Missing authentication", "NOT_FOUND");
+  }
   const [data, fields] = await addJob_DbQuery({
-    companyId,
+    companyId: user.companyId,
     title,
     description,
   });
@@ -61,8 +62,15 @@ const updateJob = async (
   return data[0];
 };
 
-const deleteJob = async (_root: any, { id }: { id: number }) => {
-  const [data, fields] = await getJobById_DbQuery(id);
+const deleteJob = async (
+  _root: any,
+  { id }: { id: number },
+  { user }: { user: IUser }
+) => {
+  if (!user) {
+    throw errorHandler("Missing authentication", "NOT_FOUND");
+  }
+  const [data, fields] = await getJobById_DbQuery(id, user.companyId);
   if (!data[0]) {
     throw errorHandler("No Job found with id " + id, "NOT_FOUND");
   }
