@@ -46,7 +46,7 @@ const updateJob = async (
   { user }: { user: IUser }
 ) => {
   if (!user) {
-    errorHandler("Missing authentication", "NOT_FOUND");
+    throw errorHandler("Missing authentication", "NOT_FOUND");
   }
   const [data, fields] = await getJobById_DbQuery(id, user.companyId);
   if (!data[0]) {

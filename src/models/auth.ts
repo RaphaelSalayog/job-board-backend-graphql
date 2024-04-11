@@ -1,40 +1,33 @@
-import { RowDataPacket } from "mysql2";
-import db from "../../util/database/connection";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { getUserByEmail_DbQuery } from "../../util/database/userQueries";
+import { errorHandler } from "../../util/error";
 
 const login = async (
   _root: any,
   { email, password }: { email: string; password: string }
 ) => {
-  try {
-    const [data, fields] = await db.execute<RowDataPacket[]>(
-      `SELECT id, companyId, email, password FROM users WHERE email=?`,
-      [email]
-    );
+  const [data, fields] = await getUserByEmail_DbQuery(email);
 
-    if (!data[0]) {
-      console.log("error >");
-    }
-
-    const isEqual = await bcrypt.compare(password, data[0].password);
-    if (!isEqual) {
-      console.log("error >>");
-    }
-
-    const token = jwt.sign(
-      {
-        userId: data[0].id,
-        username: data[0].email,
-      },
-      "secrettoken",
-      { expiresIn: "24h" }
-    );
-
-    return { token: token };
-  } catch (error: any) {
-    console.log(error);
+  if (!data[0]) {
+    throw errorHandler("Email does not exist!", "NOT_FOUND");
   }
+
+  const isEqual = await bcrypt.compare(password, data[0].password);
+  if (!isEqual) {
+    throw errorHandler("Invalid Password!", "INVALID_PASSWORD");
+  }
+
+  const token = jwt.sign(
+    {
+      userId: data[0].id,
+      username: data[0].email,
+    },
+    "secrettoken",
+    { expiresIn: "24h" }
+  );
+
+  return { token: token };
 };
 
 export { login };
