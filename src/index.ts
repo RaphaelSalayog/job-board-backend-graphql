@@ -24,14 +24,19 @@ const apolloServer = new ApolloServer({
   resolvers,
   context: async ({ req }) => {
     const token = req.get("Authorization")?.split(" ")[1];
-    if (token) {
+    if (!token) {
+      return {};
+    }
+
+    try {
       const decodedToken = jwt.verify(token, "secrettoken") as JwtPayload;
       const [data, fields] = await db.execute<RowDataPacket[]>(
         `SELECT id, companyId, email, password FROM users WHERE id="${decodedToken.userId}"`
       );
       return { user: data[0] };
+    } catch (err) {
+      return {};
     }
-    return {};
   },
 });
 apolloServer.applyMiddleware({ app, path: "/graphql" });

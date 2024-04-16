@@ -5,14 +5,15 @@ type Query {
 }
 
 type Mutation {
-  login(email: String!, password: String!): Token!
+  login(email: String!, password: String!): Login!
   createJob(input: CreateJobInput!): Job!
   updateJob(input: UpdateJobInput!): Job!
   deleteJob(id: ID!): Job!
 }
 
-type Token {
+type Login {
   token: String!
+  username: String!
 }
 
 type Job {
