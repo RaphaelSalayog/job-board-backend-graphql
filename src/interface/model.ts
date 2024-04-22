@@ -1,3 +1,5 @@
+import DataLoader from "dataloader";
+
 export interface IUser {
   id: number;
   companyId: number;
@@ -35,4 +37,9 @@ export interface IUpdateJob {
 export interface CustomError extends Error {
   statusCode?: number;
   message: string;
+}
+
+export interface Context {
+  companyLoader?: DataLoader<string, any, string>;
+  user?: any; // Define the user property as optional
 }

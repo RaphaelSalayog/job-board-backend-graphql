@@ -8,8 +8,7 @@ import {
 } from "./models/jobs";
 import { getCompanyById, jobs } from "./models/companies";
 import { login } from "./models/auth";
-import { companyLoader } from "../util/database/companyQueries";
-import { IJob } from "./interface/model";
+import { Context, IJob } from "./interface/model";
 
 const resolvers = {
   Query: {
@@ -26,7 +25,8 @@ const resolvers = {
   },
 
   Job: {
-    company: (job: IJob) => companyLoader.load(job.companyId as any), // I use as any because it only accepts string
+    company: (job: IJob, _args: any, { companyLoader }: Context) =>
+      companyLoader?.load(job.companyId as any), // I use as any because it only accepts string
   },
   Company: {
     jobs: jobs,

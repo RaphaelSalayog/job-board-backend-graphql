@@ -8,6 +8,8 @@ import resolvers from "./resolver";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { RowDataPacket } from "mysql2";
+import { createCompanyLoad } from "../util/database/companyQueries";
+import { Context } from "./interface/model";
 
 const app: Express = express();
 const PORT = process.env.PORT || 8080;
@@ -23,9 +25,12 @@ const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req }) => {
+    const companyLoader = createCompanyLoad();
+    const context: Context = { companyLoader };
+
     const token = req.get("Authorization")?.split(" ")[1];
     if (!token) {
-      return {};
+      return context;
     }
 
     try {
@@ -33,9 +38,10 @@ const apolloServer = new ApolloServer({
       const [data, fields] = await db.execute<RowDataPacket[]>(
         `SELECT id, companyId, email, password FROM users WHERE id="${decodedToken.userId}"`
       );
-      return { user: data[0] };
+      context.user = data[0];
+      return context;
     } catch (err) {
-      return {};
+      return context;
     }
   },
 });
