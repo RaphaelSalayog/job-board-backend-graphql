@@ -5,14 +5,22 @@ import {
   deleteJob_DbQuery,
   getAllJobs_DbQuery,
   getJobById_DbQuery,
+  getJobsTotalCount_DbQuery,
   updateJob_DbQuery,
 } from "../../util/database/jobQueries";
 import { getCompanyById_DbQuery } from "../../util/database/companyQueries";
 
 // Queries
-const getAllJobs = async () => {
-  const [data, fields] = await getAllJobs_DbQuery();
-  return data;
+const getAllJobs = async (
+  _root: any,
+  { limit, offset }: { limit: number; offset: number }
+) => {
+  const [data, fields] = await getAllJobs_DbQuery(limit, offset);
+  const [[{ count }]] = await getJobsTotalCount_DbQuery();
+  return {
+    jobs: data,
+    totalCount: count,
+  };
 };
 
 const getJobById = async (_root: any, { id }: { id: number }) => {

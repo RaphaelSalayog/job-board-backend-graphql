@@ -3,11 +3,30 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getCurrentDateTime } from "../customMethods";
 import { IAddJob, IUpdateJob } from "../../src/interface/model";
 
-const getAllJobs_DbQuery = () => {
+// limit - how many items will it send to the client
+// offset - what index should it start (you need to calculate it on the client side. currentPage - 1 * limit)
+const getAllJobs_DbQuery = (limit?: number, offset?: number) => {
   console.log("getAllJobs_DbQuery");
-  return db.execute<RowDataPacket[]>(
-    "SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs"
-  );
+  let query =
+    "SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs ORDER BY createdAt DESC";
+  if (limit) {
+    query += ` LIMIT ${limit}`;
+  }
+  if (offset) {
+    query += ` OFFSET ${offset}`;
+  }
+
+  return db.execute<RowDataPacket[]>(query);
+
+  // return db.execute<RowDataPacket[]>(
+  //   `SELECT id, companyId, title, description, DATE_FORMAT(createdAt, '%Y-%m-%d %H:%i:%s') as createdAt FROM jobs ORDER BY createdAt DESC ${
+  //     limit ? `LIMIT ${limit}` : ""
+  //   } ${offset ? `OFFSET ${offset}` : ""}`
+  // );
+};
+
+const getJobsTotalCount_DbQuery = () => {
+  return db.execute<RowDataPacket[]>("SELECT COUNT(*) as count FROM jobs");
 };
 
 const getJobById_DbQuery = (id: number, companyId?: number) => {
@@ -52,6 +71,7 @@ const deleteJob_DbQuery = (id: number) => {
 
 export {
   getAllJobs_DbQuery,
+  getJobsTotalCount_DbQuery,
   getJobById_DbQuery,
   getJobByCompanyId_DbQuery,
   addJob_DbQuery,

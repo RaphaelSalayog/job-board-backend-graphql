@@ -1,5 +1,5 @@
 type Query {
-  getAllJobs: [Job] #[Jobs!] add ! to prevent array elements to be nullable
+  getAllJobs(limit: Int, offset: Int): JobSubList
   getCompanyById(id: ID!): Company!
   getJobById(id: ID!): Job!
 }
@@ -22,6 +22,11 @@ type Job {
   title: String!
   description: String
   createdAt: String!
+}
+
+type JobSubList {
+  jobs: [Job] #[Jobs!] add ! to prevent array elements to be nullable
+  totalCount: Int!
 }
 
 type Company {
