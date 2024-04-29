@@ -10,13 +10,15 @@ import bodyParser from "body-parser";
 import { RowDataPacket } from "mysql2";
 import { createCompanyLoad } from "../util/database/companyQueries";
 import { Context } from "./interface/model";
+import { signup } from "./models/signup";
 
 const app: Express = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors(), bodyParser.json(), express());
 
-// app.post("/signup", signup);
+// To create an account (Use POSTMAN to create an account).
+app.post("/signup", signup);
 
 const typeDefs = gql(
   fs.readFileSync("./src/schema.graphql", { encoding: "utf8" })
